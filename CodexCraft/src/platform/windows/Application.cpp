@@ -2,21 +2,52 @@
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 #include <system_error>
 #include <vector>
 
 #include <dxgi1_2.h>
+#include <shlobj.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "shell32.lib")
 
 namespace CodexCraft::Platform::Windows {
 
 namespace {
 
 constexpr wchar_t kWindowClassName[] = L"CodexCraft::Application";
+
+void ClearEmptyShaderCacheFiles() {
+#if defined(_WIN32)
+    PWSTR localAppDataPath = nullptr;
+    if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, nullptr, &localAppDataPath))) {
+        return;
+    }
+
+    std::filesystem::path cacheDirectory(localAppDataPath);
+    CoTaskMemFree(localAppDataPath);
+    cacheDirectory /= L"D3DCache";
+
+    std::error_code ec;
+    if (!std::filesystem::exists(cacheDirectory, ec) || !std::filesystem::is_directory(cacheDirectory, ec)) {
+        return;
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(cacheDirectory, ec)) {
+        if (!entry.is_regular_file(ec)) {
+            continue;
+        }
+
+        if (entry.file_size(ec) == 0) {
+            std::filesystem::remove(entry.path(), ec);
+        }
+    }
+#endif
+}
 
 struct alignas(16) CameraConstants {
     DirectX::XMFLOAT4X4 view;
@@ -51,6 +82,8 @@ void Renderer::Initialize(HWND hwnd, UINT width, UINT height, bool enableDebugLa
 #else
     (void)enableDebugLayer;
 #endif
+
+    ClearEmptyShaderCacheFiles();
 
     ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&m_factory)), "Failed to create DXGI factory");
 
