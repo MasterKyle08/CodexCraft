@@ -1,11 +1,15 @@
-# Visual Studio Code/Studio cache
-.vs/
-.vscode/
-
-# Build results
-[Bb]in/
-[Oo]bj/
-
-# User-specific files
-*.user
+# Visual Studio user-specific files
 *.suo
+*.user
+.vs/
+*.VC.db
+
+# Build artifacts
+x64/
+Debug/
+Release/
+/bin
+/obj
+
+# Logs and temporary assets
+*.log

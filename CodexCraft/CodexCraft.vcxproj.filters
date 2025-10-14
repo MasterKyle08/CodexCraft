@@ -1,13 +1,49 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{A8A35FD6-2441-4D1E-9D42-9BD6DC1A3F6B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\camera">
+      <UniqueIdentifier>{4A0A0DA7-6C21-4E33-A9A1-A6A1F0C1F003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\platform">
+      <UniqueIdentifier>{B4C785D0-8D75-4C38-AF01-93B854AE1C0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\platform\windows">
+      <UniqueIdentifier>{2A34C92A-2FF9-4B47-ACB7-5BFDD8B18D52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\world">
+      <UniqueIdentifier>{6B2AF245-0EF5-47A5-A433-2C9C40852025}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\world\meshing">
+      <UniqueIdentifier>{AE3E6406-9CF4-4E08-95A0-7F0B41BF8BE8}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\src">
+      <UniqueIdentifier>{F0647A64-5BF4-4D9C-BB06-7C0E6EB4F44D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\src\camera">
+      <UniqueIdentifier>{2C2D89BB-4E20-49BE-A669-2F9E0B7C0F2E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\src\platform">
+      <UniqueIdentifier>{1CB61C3B-AE7C-4816-8A28-43B09B154F5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\src\platform\windows">
+      <UniqueIdentifier>{33C5C035-9D59-4A87-9055-DF92567D4B45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\src\world">
+      <UniqueIdentifier>{D0B43F65-B7A0-4D7F-9B9C-3CE97DAF3B2E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\src\world\meshing">
+      <UniqueIdentifier>{8054F42F-9451-4E8E-97CB-4D77AA5D9B46}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -19,57 +55,57 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\camera\FreeFlyCamera.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\src\camera</Filter>
     </ClCompile>
     <ClCompile Include="src\platform\windows\Application.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\src\platform\windows</Filter>
     </ClCompile>
     <ClCompile Include="src\world\BlockRegistry.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\src\world</Filter>
     </ClCompile>
     <ClCompile Include="src\world\meshing\ChunkMeshCache.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\src\world\meshing</Filter>
     </ClCompile>
     <ClCompile Include="src\world\meshing\GreedyMesher.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\src\world\meshing</Filter>
     </ClCompile>
     <ClCompile Include="src\world\World.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\src\world</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera\FreeFlyCamera.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\camera</Filter>
     </ClInclude>
     <ClInclude Include="src\platform\windows\Application.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\platform\windows</Filter>
     </ClInclude>
     <ClInclude Include="src\world\Block.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world</Filter>
     </ClInclude>
     <ClInclude Include="src\world\BlockRegistry.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world</Filter>
     </ClInclude>
     <ClInclude Include="src\world\Chunk.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world</Filter>
     </ClInclude>
     <ClInclude Include="src\world\ChunkPosition.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world</Filter>
     </ClInclude>
     <ClInclude Include="src\world\ThreadSafeQueue.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world</Filter>
     </ClInclude>
     <ClInclude Include="src\world\meshing\ChunkMeshCache.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world\meshing</Filter>
     </ClInclude>
     <ClInclude Include="src\world\meshing\GreedyMesher.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world\meshing</Filter>
     </ClInclude>
     <ClInclude Include="src\world\meshing\MeshTypes.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world\meshing</Filter>
     </ClInclude>
     <ClInclude Include="src\world\World.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\src\world</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
