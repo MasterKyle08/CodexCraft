@@ -1,0 +1,15 @@
+{
+  "atlasSize": 1024,
+  "cellSize": 64,
+  "textures": [
+    {"name": "stone", "u": 0, "v": 0, "description": "Base stone used for underground layers."},
+    {"name": "dirt", "u": 1, "v": 0, "description": "Exposed dirt without grass cover."},
+    {"name": "grass_side", "u": 2, "v": 0, "description": "Grass block side wall."},
+    {"name": "grass_top", "u": 2, "v": 1, "description": "Grass block top surface."},
+    {"name": "sand", "u": 3, "v": 0, "description": "Loose beach sand."},
+    {"name": "water", "u": 0, "v": 1, "description": "Still water surface."},
+    {"name": "wood_side", "u": 1, "v": 1, "description": "Tree log bark."},
+    {"name": "wood_top", "u": 1, "v": 2, "description": "Tree log cross-section."},
+    {"name": "leaves", "u": 2, "v": 2, "description": "Leaf canopy."}
+  ]
+}

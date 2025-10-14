@@ -69,6 +69,9 @@
     <ClCompile Include="src\world\meshing\GreedyMesher.cpp">
       <Filter>Source Files\src\world\meshing</Filter>
     </ClCompile>
+    <ClCompile Include="src\world\TextureAtlas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\world\World.cpp">
       <Filter>Source Files\src\world</Filter>
     </ClCompile>
@@ -107,5 +110,22 @@
     <ClInclude Include="src\world\World.h">
       <Filter>Header Files\src\world</Filter>
     </ClInclude>
+    <ClInclude Include="src\world\TextureAtlas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\textures\blocks.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="assets\textures\atlas_layout.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\BlockVS.hlsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shaders\BlockPS.hlsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

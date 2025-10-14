@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../BlockRegistry.h"
+#include "../TextureAtlas.h"
 
 namespace CodexCraft::World::Meshing {
 
@@ -94,6 +95,8 @@ ChunkMeshData GreedyMesher::BuildMesh(const Chunk& chunk) const {
 
         return chunk.GetBlockId(x, y, z);
     };
+
+    auto& atlas = TextureAtlas::Instance();
 
     for (int axis = 0; axis < 3; ++axis) {
         const int uAxis = (axis + 1) % 3;
@@ -205,6 +208,16 @@ ChunkMeshData GreedyMesher::BuildMesh(const Chunk& chunk) const {
                         std::array<float, 3> normal{};
                         normal[axis] = face.normalPositive ? 1.0f : -1.0f;
 
+                        const std::uint16_t tileWidth = static_cast<std::uint16_t>(width);
+                        const std::uint16_t tileHeight = static_cast<std::uint16_t>(height);
+
+                        float brightness = 0.8f;
+                        if (axis == 1) {
+                            brightness = face.normalPositive ? 1.0f : 0.55f;
+                        } else if (!face.normalPositive) {
+                            brightness = 0.7f;
+                        }
+
                         const auto pushVertex = [&](const std::array<float, 3>& position,
                                                     std::uint16_t offsetU,
                                                     std::uint16_t offsetV) {
@@ -215,12 +228,14 @@ ChunkMeshData GreedyMesher::BuildMesh(const Chunk& chunk) const {
                             vertex.normal[0] = normal[0];
                             vertex.normal[1] = normal[1];
                             vertex.normal[2] = normal[2];
-                            vertex.atlasCellU = face.atlasCell.u;
-                            vertex.atlasCellV = face.atlasCell.v;
-                            vertex.tileWidth = static_cast<std::uint16_t>(width);
-                            vertex.tileHeight = static_cast<std::uint16_t>(height);
-                            vertex.cornerOffsetU = offsetU;
-                            vertex.cornerOffsetV = offsetV;
+                            const AtlasUV uv =
+                                atlas.ComputeUV(face.atlasCell, tileWidth, tileHeight, offsetU, offsetV);
+                            vertex.uv[0] = uv.u;
+                            vertex.uv[1] = uv.v;
+                            vertex.color[0] = brightness;
+                            vertex.color[1] = brightness;
+                            vertex.color[2] = brightness;
+                            vertex.color[3] = 1.0f;
 
                             vertices.push_back(vertex);
                         };

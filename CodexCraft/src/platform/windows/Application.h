@@ -32,6 +32,8 @@ public:
     IDXGISwapChain* GetSwapChain() const noexcept;
     ID3D11RenderTargetView* GetRenderTargetView() const noexcept;
     ID3D11DepthStencilView* GetDepthStencilView() const noexcept;
+    ID3D11SamplerState* GetLinearWrapSampler() const noexcept;
+    ID3D11SamplerState* GetAnisotropicWrapSampler() const noexcept;
 
 private:
     Renderer() = default;
@@ -39,6 +41,7 @@ private:
     void CreateBackBufferResources();
     void ReleaseBackBufferResources();
     void CreateCameraConstantBuffer();
+    void CreateSamplerStates();
 
     Microsoft::WRL::ComPtr<IDXGIFactory1> m_factory;
     Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
@@ -48,6 +51,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencil;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
     Microsoft::WRL::ComPtr<ID3D11Buffer> m_cameraConstantBuffer;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> m_linearWrapSampler;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> m_anisotropicWrapSampler;
     D3D_FEATURE_LEVEL m_featureLevel{ D3D_FEATURE_LEVEL_11_0 };
     UINT m_width{ 0 };
     UINT m_height{ 0 };
