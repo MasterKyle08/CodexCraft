@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\camera\FreeFlyCamera.cpp" />
     <ClCompile Include="src\platform\windows\Application.cpp" />
     <ClCompile Include="src\world\BlockRegistry.cpp" />
     <ClCompile Include="src\world\meshing\ChunkMeshCache.cpp" />
@@ -137,6 +138,7 @@
     <ClCompile Include="src\world\World.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera\FreeFlyCamera.h" />
     <ClInclude Include="src\platform\windows\Application.h" />
     <ClInclude Include="src\world\Block.h" />
     <ClInclude Include="src\world\BlockRegistry.h" />
