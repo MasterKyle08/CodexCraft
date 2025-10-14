@@ -8,26 +8,11 @@
 #include <vector>
 
 #include "Chunk.h"
+#include "ChunkPosition.h"
 #include "ThreadSafeQueue.h"
+#include "meshing/ChunkMeshCache.h"
 
 namespace CodexCraft::World {
-
-struct ChunkPosition {
-    std::int32_t x{ 0 };
-    std::int32_t z{ 0 };
-};
-
-inline bool operator==(const ChunkPosition& lhs, const ChunkPosition& rhs) noexcept {
-    return lhs.x == rhs.x && lhs.z == rhs.z;
-}
-
-struct ChunkPositionHasher {
-    [[nodiscard]] std::size_t operator()(const ChunkPosition& position) const noexcept {
-        const std::uint64_t packedX = static_cast<std::uint32_t>(position.x);
-        const std::uint64_t packedZ = static_cast<std::uint32_t>(position.z);
-        return static_cast<std::size_t>((packedX << 32u) ^ packedZ);
-    }
-};
 
 struct ChunkTask {
     ChunkPosition position{};
@@ -52,6 +37,9 @@ public:
 
     void QueueChunkForMeshing(const std::shared_ptr<Chunk>& chunk);
 
+    [[nodiscard]] Meshing::ChunkMeshCache& MeshCache() noexcept { return m_meshCache; }
+    [[nodiscard]] const Meshing::ChunkMeshCache& MeshCache() const noexcept { return m_meshCache; }
+
 private:
     [[nodiscard]] ChunkPosition WorldToChunkPosition(float worldX, float worldZ) const noexcept;
     void EnsureChunksAround(const ChunkPosition& center);
@@ -62,6 +50,7 @@ private:
     std::unordered_map<ChunkPosition, std::shared_ptr<Chunk>, ChunkPositionHasher> m_chunks;
     ThreadSafeQueue<ChunkTask> m_generationQueue;
     ThreadSafeQueue<ChunkTask> m_meshQueue;
+    Meshing::ChunkMeshCache m_meshCache;
 };
 
 } // namespace CodexCraft::World

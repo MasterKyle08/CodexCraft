@@ -40,6 +40,8 @@ public:
     [[nodiscard]] const std::array<std::uint8_t, kChunkVolume>& BlockLight() const noexcept { return m_blockLight; }
     [[nodiscard]] const std::array<std::uint8_t, kChunkVolume>& SkyLight() const noexcept { return m_skyLight; }
 
+    [[nodiscard]] std::uint64_t GetRevision() const noexcept { return m_revision; }
+
 private:
     [[nodiscard]] static constexpr std::size_t Index(std::int32_t x, std::int32_t y, std::int32_t z) noexcept {
         return (static_cast<std::size_t>(y) * static_cast<std::size_t>(kChunkDepth) + static_cast<std::size_t>(z)) *
@@ -59,6 +61,7 @@ private:
     std::array<std::uint8_t, kChunkVolume> m_skyLight{};
     std::int32_t m_chunkX{ 0 };
     std::int32_t m_chunkZ{ 0 };
+    std::uint64_t m_revision{ 0 };
 };
 
 inline Chunk::Chunk(std::int32_t chunkX, std::int32_t chunkZ) noexcept
@@ -72,7 +75,13 @@ inline BlockId Chunk::GetBlockId(std::int32_t x, std::int32_t y, std::int32_t z)
 
 inline void Chunk::SetBlockId(std::int32_t x, std::int32_t y, std::int32_t z, BlockId id) noexcept {
     AssertInRange(x, y, z);
-    m_blocks[Index(x, y, z)] = id;
+    const std::size_t index = Index(x, y, z);
+    if (m_blocks[index] == id) {
+        return;
+    }
+
+    m_blocks[index] = id;
+    ++m_revision;
 }
 
 inline std::uint8_t Chunk::GetMetadata(std::int32_t x, std::int32_t y, std::int32_t z) const noexcept {

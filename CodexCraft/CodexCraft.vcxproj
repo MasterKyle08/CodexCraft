@@ -131,13 +131,21 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\platform\windows\Application.cpp" />
+    <ClCompile Include="src\world\BlockRegistry.cpp" />
+    <ClCompile Include="src\world\meshing\ChunkMeshCache.cpp" />
+    <ClCompile Include="src\world\meshing\GreedyMesher.cpp" />
     <ClCompile Include="src\world\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\platform\windows\Application.h" />
     <ClInclude Include="src\world\Block.h" />
+    <ClInclude Include="src\world\BlockRegistry.h" />
     <ClInclude Include="src\world\Chunk.h" />
+    <ClInclude Include="src\world\ChunkPosition.h" />
     <ClInclude Include="src\world\ThreadSafeQueue.h" />
+    <ClInclude Include="src\world\meshing\ChunkMeshCache.h" />
+    <ClInclude Include="src\world\meshing\GreedyMesher.h" />
+    <ClInclude Include="src\world\meshing\MeshTypes.h" />
     <ClInclude Include="src\world\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
