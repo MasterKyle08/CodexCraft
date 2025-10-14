@@ -1,9 +1,11 @@
 #include "Application.h"
 
 #include <chrono>
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <system_error>
+#include <vector>
 
 #include <dxgi1_2.h>
 
@@ -15,6 +17,14 @@ namespace CodexCraft::Platform::Windows {
 namespace {
 
 constexpr wchar_t kWindowClassName[] = L"CodexCraft::Application";
+
+struct alignas(16) CameraConstants {
+    DirectX::XMFLOAT4X4 view;
+    DirectX::XMFLOAT4X4 projection;
+    DirectX::XMFLOAT4X4 viewProjection;
+    DirectX::XMFLOAT3 cameraPosition;
+    float padding{ 0.0f };
+};
 
 void ThrowIfFailed(HRESULT hr, const char* message) {
     if (FAILED(hr)) {
@@ -99,6 +109,7 @@ void Renderer::Initialize(HWND hwnd, UINT width, UINT height, bool enableDebugLa
     ThrowIfFailed(hr, "Failed to create D3D11 device and swap chain");
 
     CreateBackBufferResources();
+    CreateCameraConstantBuffer();
 }
 
 void Renderer::Shutdown() {
@@ -107,6 +118,8 @@ void Renderer::Shutdown() {
     }
 
     ReleaseBackBufferResources();
+
+    m_cameraConstantBuffer.Reset();
 
     if (m_context) {
         m_context->ClearState();
@@ -158,6 +171,31 @@ void Renderer::EndFrame(bool vsync) {
     }
 
     m_swapChain->Present(vsync ? 1 : 0, 0);
+}
+
+void Renderer::UpdateCameraConstants(DirectX::FXMMATRIX view,
+                                     DirectX::CXMMATRIX projection,
+                                     const DirectX::XMFLOAT3& cameraPosition) {
+    if (!m_cameraConstantBuffer || !m_context) {
+        return;
+    }
+
+    CameraConstants constants{};
+    DirectX::XMStoreFloat4x4(&constants.view, DirectX::XMMatrixTranspose(view));
+    DirectX::XMStoreFloat4x4(&constants.projection, DirectX::XMMatrixTranspose(projection));
+    DirectX::XMStoreFloat4x4(&constants.viewProjection,
+                             DirectX::XMMatrixTranspose(DirectX::XMMatrixMultiply(view, projection)));
+    constants.cameraPosition = cameraPosition;
+
+    m_context->UpdateSubresource(m_cameraConstantBuffer.Get(), 0, nullptr, &constants, 0, 0);
+
+    ID3D11Buffer* buffers[] = { m_cameraConstantBuffer.Get() };
+    m_context->VSSetConstantBuffers(0, 1, buffers);
+    m_context->PSSetConstantBuffers(0, 1, buffers);
+}
+
+ID3D11Buffer* Renderer::GetCameraConstantBuffer() const noexcept {
+    return m_cameraConstantBuffer.Get();
 }
 
 ID3D11Device* Renderer::GetDevice() const noexcept {
@@ -226,23 +264,49 @@ void Renderer::ReleaseBackBufferResources() {
     m_depthStencil.Reset();
 }
 
+void Renderer::CreateCameraConstantBuffer() {
+    if (!m_device) {
+        return;
+    }
+
+    D3D11_BUFFER_DESC desc{};
+    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    desc.ByteWidth = sizeof(CameraConstants);
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+    desc.StructureByteStride = 0;
+
+    ThrowIfFailed(m_device->CreateBuffer(&desc, nullptr, &m_cameraConstantBuffer),
+                  "Failed to create camera constant buffer");
+}
+
 Application::Application(HINSTANCE instance, int showCommand)
     : m_instance(instance) {
     m_windowClassName = kWindowClassName;
 
     RegisterWindowClass();
     CreateWindowInstance();
+    RegisterRawInputDevices();
 
     ShowWindow(m_hwnd, showCommand);
     UpdateWindow(m_hwnd);
 
     QueryPerformanceFrequency(&m_frequency);
     QueryPerformanceCounter(&m_lastCounter);
+
+    m_camera.SetMovementSpeed(24.0f);
+    m_camera.SetPitchLimits(-DirectX::XM_PIDIV2 + DirectX::XMConvertToRadians(1.0f),
+                            DirectX::XM_PIDIV2 - DirectX::XMConvertToRadians(1.0f));
 }
 
 int Application::Run() {
     auto& renderer = Renderer::Instance();
     renderer.Initialize(m_hwnd, m_width, m_height);
+
+    const float aspect = static_cast<float>(m_width) / static_cast<float>(m_height);
+    m_camera.SetPerspective(DirectX::XMConvertToRadians(70.0f), aspect, 0.1f, 4096.0f);
+    renderer.UpdateCameraConstants(m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix(), m_camera.GetPosition());
 
     MSG msg{};
     while (m_running) {
@@ -257,7 +321,7 @@ int Application::Run() {
         const double deltaSeconds = static_cast<double>(now.QuadPart - m_lastCounter.QuadPart) /
                                     static_cast<double>(m_frequency.QuadPart);
         m_lastCounter = now;
-        (void)deltaSeconds; // Available for simulation & rendering systems.
+        UpdateSimulation(deltaSeconds);
 
         const float clearColor[4] = { 0.07f, 0.07f, 0.12f, 1.0f };
         renderer.BeginFrame(clearColor);
@@ -315,6 +379,18 @@ void Application::CreateWindowInstance() {
     }
 }
 
+void Application::RegisterRawInputDevices() {
+    RAWINPUTDEVICE rid{};
+    rid.usUsagePage = 0x01;
+    rid.usUsage = 0x02;
+    rid.dwFlags = RIDEV_INPUTSINK;
+    rid.hwndTarget = m_hwnd;
+
+    if (!RegisterRawInputDevices(&rid, 1, sizeof(rid))) {
+        ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()), "Failed to register raw input device");
+    }
+}
+
 void Application::ProcessPendingMessages() {
     MSG msg{};
     while (PeekMessageW(&msg, nullptr, 0u, 0u, PM_REMOVE)) {
@@ -326,6 +402,201 @@ void Application::ProcessPendingMessages() {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+}
+
+void Application::UpdateSimulation(double deltaSeconds) {
+    UpdateCamera(deltaSeconds);
+    ApplyHeightConstraints();
+    Renderer::Instance().UpdateCameraConstants(m_camera.GetViewMatrix(),
+                                               m_camera.GetProjectionMatrix(),
+                                               m_camera.GetPosition());
+    ResetInputDeltas();
+}
+
+void Application::UpdateCamera(double deltaSeconds) {
+    const float dt = static_cast<float>(deltaSeconds);
+
+    const float yawDelta = static_cast<float>(m_input.mouseDeltaX) * m_mouseSensitivity;
+    const float pitchDelta = static_cast<float>(m_input.mouseDeltaY) * m_mouseSensitivity;
+
+    if (yawDelta != 0.0f) {
+        m_camera.AddYaw(yawDelta);
+    }
+    if (pitchDelta != 0.0f) {
+        m_camera.AddPitch(-pitchDelta);
+    }
+
+    if (m_input.rollLeft) {
+        m_camera.AddRoll(m_rollSpeed * dt);
+    }
+    if (m_input.rollRight) {
+        m_camera.AddRoll(-m_rollSpeed * dt);
+    }
+
+    DirectX::XMVECTOR movement = DirectX::XMVectorZero();
+    const DirectX::XMFLOAT3 forward3 = m_camera.GetForwardVector();
+    const DirectX::XMFLOAT3 right3 = m_camera.GetRightVector();
+    const DirectX::XMFLOAT3 up3 = m_camera.GetUpVector();
+    const DirectX::XMVECTOR forward = DirectX::XMLoadFloat3(&forward3);
+    const DirectX::XMVECTOR right = DirectX::XMLoadFloat3(&right3);
+    const DirectX::XMVECTOR up = DirectX::XMLoadFloat3(&up3);
+
+    if (m_input.forward) {
+        movement = DirectX::XMVectorAdd(movement, forward);
+    }
+    if (m_input.backward) {
+        movement = DirectX::XMVectorSubtract(movement, forward);
+    }
+    if (m_input.right) {
+        movement = DirectX::XMVectorAdd(movement, right);
+    }
+    if (m_input.left) {
+        movement = DirectX::XMVectorSubtract(movement, right);
+    }
+    if (m_input.ascend) {
+        movement = DirectX::XMVectorAdd(movement, up);
+    }
+    if (m_input.descend) {
+        movement = DirectX::XMVectorSubtract(movement, up);
+    }
+
+    const float baseSpeed = m_camera.GetMovementSpeed();
+    const float speedMultiplier = m_input.boost ? 3.0f : 1.0f;
+    const float moveSpeed = baseSpeed * speedMultiplier;
+
+    if (!DirectX::XMVector3Equal(movement, DirectX::XMVectorZero())) {
+        movement = DirectX::XMVector3Normalize(movement);
+        movement = DirectX::XMVectorScale(movement, moveSpeed * dt);
+        m_camera.Translate(movement);
+    }
+}
+
+void Application::ApplyHeightConstraints() {
+    auto position = m_camera.GetPosition();
+    const float terrainHeight = QueryTerrainHeight(position.x, position.z);
+    const float minimumHeight = terrainHeight + m_eyeHeight;
+    if (position.y < minimumHeight) {
+        position.y = minimumHeight;
+        m_camera.SetPosition(position);
+    }
+}
+
+float Application::QueryTerrainHeight(float worldX, float worldZ) const {
+    (void)worldX;
+    (void)worldZ;
+    // Temporary plane-based height until chunk collision is implemented.
+    return 0.0f;
+}
+
+void Application::ResetInputDeltas() {
+    m_input.ResetDeltas();
+}
+
+void Application::HandleRawInput(LPARAM lParam) {
+    UINT size = 0;
+    if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) != 0) {
+        return;
+    }
+
+    if (size == 0) {
+        return;
+    }
+
+    std::vector<std::uint8_t> buffer(size);
+    if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, buffer.data(), &size, sizeof(RAWINPUTHEADER)) != size) {
+        return;
+    }
+
+    const RAWINPUT* raw = reinterpret_cast<const RAWINPUT*>(buffer.data());
+    if (raw->header.dwType == RIM_TYPEMOUSE) {
+        m_input.mouseDeltaX += raw->data.mouse.lLastX;
+        m_input.mouseDeltaY += raw->data.mouse.lLastY;
+    }
+}
+
+void Application::OnKeyDown(WPARAM key, LPARAM lParam) {
+    (void)lParam;
+    switch (key) {
+    case 'W':
+        m_input.forward = true;
+        break;
+    case 'S':
+        m_input.backward = true;
+        break;
+    case 'A':
+        m_input.left = true;
+        break;
+    case 'D':
+        m_input.right = true;
+        break;
+    case 'Q':
+    case VK_SPACE:
+        m_input.ascend = true;
+        break;
+    case 'E':
+    case VK_CONTROL:
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+        m_input.descend = true;
+        break;
+    case 'Z':
+        m_input.rollLeft = true;
+        break;
+    case 'C':
+        m_input.rollRight = true;
+        break;
+    case VK_SHIFT:
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+        m_input.boost = true;
+        break;
+    default:
+        break;
+    }
+}
+
+void Application::OnKeyUp(WPARAM key) {
+    switch (key) {
+    case 'W':
+        m_input.forward = false;
+        break;
+    case 'S':
+        m_input.backward = false;
+        break;
+    case 'A':
+        m_input.left = false;
+        break;
+    case 'D':
+        m_input.right = false;
+        break;
+    case 'Q':
+    case VK_SPACE:
+        m_input.ascend = false;
+        break;
+    case 'E':
+    case VK_CONTROL:
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+        m_input.descend = false;
+        break;
+    case 'Z':
+        m_input.rollLeft = false;
+        break;
+    case 'C':
+        m_input.rollRight = false;
+        break;
+    case VK_SHIFT:
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+        m_input.boost = false;
+        break;
+    default:
+        break;
+    }
+}
+
+void Application::OnLostFocus() {
+    m_input.Clear();
 }
 
 LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -342,6 +613,12 @@ LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             m_width = LOWORD(lParam);
             m_height = HIWORD(lParam);
             Renderer::Instance().Resize(m_width, m_height);
+            if (m_width > 0 && m_height > 0) {
+                const float aspectRatio = static_cast<float>(m_width) / static_cast<float>(m_height);
+                m_camera.SetPerspective(DirectX::XMConvertToRadians(70.0f), aspectRatio, 0.1f, 4096.0f);
+                Renderer::Instance().UpdateCameraConstants(
+                    m_camera.GetViewMatrix(), m_camera.GetProjectionMatrix(), m_camera.GetPosition());
+            }
         }
         return 0;
     case WM_GETMINMAXINFO: {
@@ -355,7 +632,17 @@ LRESULT Application::HandleMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             PostMessageW(hwnd, WM_CLOSE, 0, 0);
             return 0;
         }
-        break;
+        OnKeyDown(wParam, lParam);
+        return 0;
+    case WM_KEYUP:
+        OnKeyUp(wParam);
+        return 0;
+    case WM_INPUT:
+        HandleRawInput(lParam);
+        return 0;
+    case WM_KILLFOCUS:
+        OnLostFocus();
+        return 0;
     default:
         break;
     }

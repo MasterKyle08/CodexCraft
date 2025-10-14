@@ -18,6 +18,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\camera\FreeFlyCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\platform\windows\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -35,6 +38,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera\FreeFlyCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\platform\windows\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
