@@ -14,7 +14,7 @@ std::int32_t ClampViewDistance(std::int32_t value) noexcept {
 bool IsWithinViewDistance(const ChunkPosition& center, const ChunkPosition& candidate, std::int32_t viewDistance) noexcept {
     const std::int32_t dx = candidate.x - center.x;
     const std::int32_t dz = candidate.z - center.z;
-    const std::int32_t chebyshevDistance = std::max(std::abs(dx), std::abs(dz));
+    const std::int32_t chebyshevDistance = std::max<std::int32_t>(std::abs(dx), std::abs(dz));
     return chebyshevDistance <= viewDistance;
 }
 } // namespace
