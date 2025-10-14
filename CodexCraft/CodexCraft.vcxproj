@@ -135,6 +135,7 @@
     <ClCompile Include="src\world\BlockRegistry.cpp" />
     <ClCompile Include="src\world\meshing\ChunkMeshCache.cpp" />
     <ClCompile Include="src\world\meshing\GreedyMesher.cpp" />
+    <ClCompile Include="src\world\TextureAtlas.cpp" />
     <ClCompile Include="src\world\World.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -148,7 +149,14 @@
     <ClInclude Include="src\world\meshing\ChunkMeshCache.h" />
     <ClInclude Include="src\world\meshing\GreedyMesher.h" />
     <ClInclude Include="src\world\meshing\MeshTypes.h" />
+    <ClInclude Include="src\world\TextureAtlas.h" />
     <ClInclude Include="src\world\World.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\textures\blocks.png" />
+    <None Include="assets\textures\atlas_layout.json" />
+    <None Include="shaders\BlockPS.hlsl" />
+    <None Include="shaders\BlockVS.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

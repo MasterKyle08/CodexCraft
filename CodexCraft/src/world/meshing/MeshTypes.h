@@ -13,12 +13,8 @@ namespace CodexCraft::World::Meshing {
 struct ChunkVertex {
     float position[3];
     float normal[3];
-    std::uint16_t atlasCellU;
-    std::uint16_t atlasCellV;
-    std::uint16_t tileWidth;
-    std::uint16_t tileHeight;
-    std::uint16_t cornerOffsetU;
-    std::uint16_t cornerOffsetV;
+    float uv[2];
+    float color[4];
 };
 
 struct MeshBuffers {

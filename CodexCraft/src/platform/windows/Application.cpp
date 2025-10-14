@@ -110,6 +110,7 @@ void Renderer::Initialize(HWND hwnd, UINT width, UINT height, bool enableDebugLa
 
     CreateBackBufferResources();
     CreateCameraConstantBuffer();
+    CreateSamplerStates();
 }
 
 void Renderer::Shutdown() {
@@ -120,6 +121,8 @@ void Renderer::Shutdown() {
     ReleaseBackBufferResources();
 
     m_cameraConstantBuffer.Reset();
+    m_linearWrapSampler.Reset();
+    m_anisotropicWrapSampler.Reset();
 
     if (m_context) {
         m_context->ClearState();
@@ -218,6 +221,14 @@ ID3D11DepthStencilView* Renderer::GetDepthStencilView() const noexcept {
     return m_depthStencilView.Get();
 }
 
+ID3D11SamplerState* Renderer::GetLinearWrapSampler() const noexcept {
+    return m_linearWrapSampler.Get();
+}
+
+ID3D11SamplerState* Renderer::GetAnisotropicWrapSampler() const noexcept {
+    return m_anisotropicWrapSampler.Get();
+}
+
 void Renderer::CreateBackBufferResources() {
     Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
     ThrowIfFailed(m_swapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)), "Failed to access back buffer");
@@ -279,6 +290,30 @@ void Renderer::CreateCameraConstantBuffer() {
 
     ThrowIfFailed(m_device->CreateBuffer(&desc, nullptr, &m_cameraConstantBuffer),
                   "Failed to create camera constant buffer");
+}
+
+void Renderer::CreateSamplerStates() {
+    if (!m_device) {
+        return;
+    }
+
+    D3D11_SAMPLER_DESC desc{};
+    desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    desc.MinLOD = 0.0f;
+    desc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    ThrowIfFailed(m_device->CreateSamplerState(&desc, &m_linearWrapSampler),
+                  "Failed to create linear wrap sampler");
+
+    desc.Filter = D3D11_FILTER_ANISOTROPIC;
+    desc.MaxAnisotropy = 8;
+
+    ThrowIfFailed(m_device->CreateSamplerState(&desc, &m_anisotropicWrapSampler),
+                  "Failed to create anisotropic wrap sampler");
 }
 
 Application::Application(HINSTANCE instance, int showCommand)
