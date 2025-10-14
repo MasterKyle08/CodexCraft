@@ -21,6 +21,15 @@
     <ClCompile Include="src\platform\windows\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\world\BlockRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\world\meshing\ChunkMeshCache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\world\meshing\GreedyMesher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\world\World.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -32,10 +41,25 @@
     <ClInclude Include="src\world\Block.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\world\BlockRegistry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\world\Chunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\world\ChunkPosition.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\world\ThreadSafeQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\meshing\ChunkMeshCache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\meshing\GreedyMesher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\world\meshing\MeshTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\world\World.h">

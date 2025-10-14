@@ -73,6 +73,8 @@ void World::QueueChunkForMeshing(const std::shared_ptr<Chunk>& chunk) {
     task.position = { chunk->GetChunkX(), chunk->GetChunkZ() };
     task.chunk = chunk;
     m_meshQueue.Push(std::move(task));
+
+    m_meshCache.UpdateChunkMesh(chunk);
 }
 
 ChunkPosition World::WorldToChunkPosition(float worldX, float worldZ) const noexcept {
@@ -131,6 +133,7 @@ void World::UnloadDistantChunks(const ChunkPosition& center) {
     for (const ChunkPosition& position : toRemove) {
         auto it = m_chunks.find(position);
         if (it != m_chunks.end() && !IsWithinViewDistance(center, position, m_viewDistance)) {
+            m_meshCache.RemoveChunk(position);
             m_chunks.erase(it);
         }
     }
