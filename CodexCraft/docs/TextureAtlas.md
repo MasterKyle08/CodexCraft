@@ -4,6 +4,10 @@
 - **Cell size:** 64×64 pixels (16×16 grid)
 - **File location:** `assets/textures/blocks.png`
 
+> **Tip:** If your artwork ships as `atlas.png`, copy or rename it to
+> `assets/textures/blocks.png` so the runtime can locate it without any
+> additional configuration.
+
 The atlas is treated as a uniform grid. Each block face references a cell via
 its `(u, v)` index in `BlockRegistry.cpp`, and the runtime atlas helper computes
 padded UV rectangles directly from those indices. No external scripts are
