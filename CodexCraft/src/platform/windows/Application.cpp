@@ -33,12 +33,16 @@ void ClearEmptyShaderCacheFiles() {
     cacheDirectory /= L"D3DCache";
 
     std::error_code ec;
-    if (!std::filesystem::exists(cacheDirectory, ec) || !std::filesystem::is_directory(cacheDirectory, ec)) {
-        return;
+    if (!std::filesystem::exists(cacheDirectory, ec)) {
+        std::filesystem::create_directories(cacheDirectory, ec);
+        if (ec) {
+            return;
+        }
     }
 
-    std::vector<std::filesystem::path> directoriesToCheck;
-    directoriesToCheck.push_back(cacheDirectory);
+    if (!std::filesystem::is_directory(cacheDirectory, ec)) {
+        return;
+    }
 
     for (std::filesystem::recursive_directory_iterator it(cacheDirectory, ec), end; it != end; it.increment(ec)) {
         if (ec) {
@@ -47,11 +51,6 @@ void ClearEmptyShaderCacheFiles() {
         }
 
         const auto& entry = *it;
-        if (entry.is_directory(ec)) {
-            directoriesToCheck.push_back(entry.path());
-            continue;
-        }
-
         if (!entry.is_regular_file(ec)) {
             continue;
         }
@@ -67,22 +66,6 @@ void ClearEmptyShaderCacheFiles() {
             if (ec) {
                 ec.clear();
             }
-        }
-    }
-
-    // Remove now-empty directories to allow DirectX to regenerate fresh cache entries.
-    for (auto it = directoriesToCheck.rbegin(); it != directoriesToCheck.rend(); ++it) {
-        const auto& directory = *it;
-        if (directory == cacheDirectory) {
-            continue;
-        }
-
-        if (std::filesystem::is_empty(directory, ec)) {
-            std::filesystem::remove(directory, ec);
-        }
-
-        if (ec) {
-            ec.clear();
         }
     }
 #endif
