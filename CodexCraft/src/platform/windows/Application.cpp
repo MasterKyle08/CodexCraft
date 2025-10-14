@@ -421,7 +421,7 @@ void Application::RegisterRawInputDevices() {
     rid.dwFlags = RIDEV_INPUTSINK;
     rid.hwndTarget = m_hwnd;
 
-    if (!RegisterRawInputDevices(&rid, 1, sizeof(rid))) {
+    if (!::RegisterRawInputDevices(&rid, 1, sizeof(rid))) {
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()), "Failed to register raw input device");
     }
 }
