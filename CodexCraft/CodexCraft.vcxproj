@@ -131,9 +131,14 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\platform\windows\Application.cpp" />
+    <ClCompile Include="src\world\World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\platform\windows\Application.h" />
+    <ClInclude Include="src\world\Block.h" />
+    <ClInclude Include="src\world\Chunk.h" />
+    <ClInclude Include="src\world\ThreadSafeQueue.h" />
+    <ClInclude Include="src\world\World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
